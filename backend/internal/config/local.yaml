@@ -1,0 +1,16 @@
+env: 'local' #locla, dev, prod
+
+storage_path: './storage/storage.db'
+
+http_serever:
+  port: "8082"
+  timeout: 4s
+  idle_timeout: 60s
+
+db:
+  driver: 'postgres'
+  host: 'localhost'
+  port: 5432
+  username: 'orders_user'
+  password: 'orders_password'
+  dbname: 'orders_db'
