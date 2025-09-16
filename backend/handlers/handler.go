@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"net/http"
@@ -23,15 +24,12 @@ func GetOrder(app *app.App) http.HandlerFunc {
 			return
 		}
 
-		// вызвать сервис GetById
-		// user, err := app.UserService.GetById(r.Context(), idUuid)
-		// if err != nil {
-		// 	common.ErrorResponse(w, fmt.Errorf("%s: %w", prompt, err).Error(), http.StatusInternalServerError)
-		// 	return
-		// }
+		user, err := app.OrderService.GetById(context.Background(), id)
+		if err != nil {
+			common.ErrorResponse(w, fmt.Errorf("%s: %w", prompt, err).Error(), http.StatusInternalServerError)
+			return
+		}
 
-		//common.SuccessResponse(w, http.StatusOK, map[string]interface{}{"user": common.ToUserTransport(user)})
-
-		common.SuccessResponse(w, http.StatusOK, map[string]interface{}{"user": id})
+		common.SuccessResponse(w, http.StatusOK, map[string]interface{}{"order": user})
 	}
 }

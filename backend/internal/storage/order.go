@@ -2,9 +2,11 @@ package order
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"wildberies/L0/backend/domain"
 
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
@@ -13,6 +15,7 @@ type orderRepository struct {
 	db *pgxpool.Pool
 }
 
+// создаем ссылку на структуру, возвращаем интерфейс
 func NewOrderRepository(db *pgxpool.Pool) domain.OrderRepository {
 	return &orderRepository{
 		db: db,
@@ -113,17 +116,20 @@ func (r *orderRepository) GetById(ctx context.Context, id string) (*domain.Order
 	}
 
 	// Получение основного заказа и связанных данных
-	err := r.db.QueryRow(ctx, `
-        SELECT o.order_uid, o.track_number, o.entry, o.locale, o.internal_signature,
-               o.customer_id, o.delivery_service, o.shardkey, o.sm_id, o.date_created, o.oof_shard,
-               d.name, d.phone, d.zip, d.city, d.address, d.region, d.email,
-               p.transaction, p.request_id, p.currency, p.provider, p.amount, p.payment_dt,
-               p.bank, p.delivery_cost, p.goods_total, p.custom_fee
+	query := `
+        SELECT 
+            o.order_uid, o.track_number, o.entry, o.locale, o.internal_signature,
+            o.customer_id, o.delivery_service, o.shardkey, o.sm_id, o.date_created, o.oof_shard,
+            d.name, d.phone, d.zip, d.city, d.address, d.region, d.email,
+            p.transaction, p.request_id, p.currency, p.provider, p.amount, p.payment_dt,
+            p.bank, p.delivery_cost, p.goods_total, p.custom_fee
         FROM orders o
-        JOIN deliveries d ON o.order_uid = d.deliveries_id
-        JOIN payments p ON o.order_uid = p.transaction_id
+        LEFT JOIN deliveries d ON o.order_uid = d.deliveries_id
+        LEFT JOIN payments p ON o.order_uid = p.transaction_id
         WHERE o.order_uid = $1
-    `, id).Scan(
+    `
+
+	err := r.db.QueryRow(ctx, query, id).Scan(
 		&order.OrderUID, &order.TrackNumber, &order.Entry, &order.Locale,
 		&order.InternalSignature, &order.CustomerID, &order.DeliveryService,
 		&order.Shardkey, &order.SmID, &order.DateCreated, &order.OofShard,
@@ -135,19 +141,25 @@ func (r *orderRepository) GetById(ctx context.Context, id string) (*domain.Order
 		&order.Payment.Bank, &order.Payment.DeliveryCost, &order.Payment.GoodsTotal,
 		&order.Payment.CustomFee,
 	)
+
 	if err != nil {
-		return nil, fmt.Errorf("getting order by id: %w", err)
+		if errors.Is(err, pgx.ErrNoRows) {
+			return nil, fmt.Errorf("no Order with this id: %w", err)
+		}
+		return nil, fmt.Errorf("getting Order by id: %w", err)
 	}
 
 	// Получение элементов заказа
-	rows, err := r.db.Query(ctx, `
+	itemsQuery := `
         SELECT chrt_id, track_number, price, rid, name, sale, size,
                total_price, nm_id, brand, status
         FROM items
         WHERE items_id = $1
-    `, id)
+    `
+
+	rows, err := r.db.Query(ctx, itemsQuery, id)
 	if err != nil {
-		return nil, fmt.Errorf("getting items for order: %w", err)
+		return nil, fmt.Errorf("getting Items for order: %w", err)
 	}
 	defer rows.Close()
 
@@ -159,7 +171,7 @@ func (r *orderRepository) GetById(ctx context.Context, id string) (*domain.Order
 			&item.Status,
 		)
 		if err != nil {
-			return nil, fmt.Errorf("scanning item: %w", err)
+			return nil, fmt.Errorf("scanning Item: %w", err)
 		}
 		order.Items = append(order.Items, item)
 	}
@@ -170,6 +182,21 @@ func (r *orderRepository) GetById(ctx context.Context, id string) (*domain.Order
 
 	return order, nil
 }
+
+// func (r *orderRepository) GetById(ctx context.Context, id string) (*domain.Order, error) {
+// 	//возвращать структуру
+// 	data := new(domain.Order)
+
+// 	query := `SELECT data FROM orders WHERE id = $1`
+
+// 	err := r.db.QueryRow(ctx, query, id).Scan(&data)
+
+// 	if err != nil {
+// 		return nil, fmt.Errorf("getting order by id: %w", err)
+// 	}
+
+// 	return data, nil
+// }
 
 // func (r *orderRepository) Create(ctx context.Context, order *domain.Order) error {
 
@@ -193,21 +220,3 @@ func (r *orderRepository) GetById(ctx context.Context, id string) (*domain.Order
 // 		}
 // 		return fmt.Errorf("creating order: %w", err)
 // 	}
-
-// 	return nil
-// }
-
-// func (r *orderRepository) GetById(ctx context.Context, id string) (*domain.Order, error) {
-// 	//возвращать структуру
-// 	data := new(domain.Order)
-
-// 	query := `SELECT data FROM orders WHERE id = $1`
-
-// 	err := r.db.QueryRow(ctx, query, id).Scan(&data)
-
-// 	if err != nil {
-// 		return nil, fmt.Errorf("getting order by id: %w", err)
-// 	}
-
-// 	return data, nil
-// }
