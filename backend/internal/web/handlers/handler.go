@@ -5,8 +5,9 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	"wildberies/L0/backend/handlers/common"
+
 	"wildberies/L0/backend/internal/app"
+	"wildberies/L0/backend/internal/web/handlers/common"
 
 	"github.com/go-chi/chi"
 )

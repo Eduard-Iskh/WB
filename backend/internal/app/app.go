@@ -3,10 +3,10 @@ package app
 import (
 	"log/slog"
 	"wildberies/L0/backend/cache"
-	"wildberies/L0/backend/domain"
 	"wildberies/L0/backend/internal/config"
-	order "wildberies/L0/backend/internal/storage"
-	"wildberies/L0/backend/services"
+	domain "wildberies/L0/backend/internal/entify"
+	"wildberies/L0/backend/internal/services"
+	order "wildberies/L0/backend/internal/storage/postgres"
 
 	"github.com/jackc/pgx/v5/pgxpool"
 )

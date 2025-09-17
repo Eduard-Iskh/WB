@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"log"
-	"wildberies/L0/backend/domain"
+	domain "wildberies/L0/backend/internal/entify"
 
 	"github.com/go-playground/validator/v10"
 )

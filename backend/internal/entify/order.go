@@ -31,7 +31,3 @@ type OrderService interface {
 	Create(ctx context.Context, order []byte) error
 	GetById(ctx context.Context, id string) (*Order, error)
 }
-
-//type GetByIdInCache(ctx context.Context, id Order.OrderUID)
-
-//getbyid(ctx, OrderUID)

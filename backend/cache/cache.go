@@ -2,7 +2,7 @@ package cache
 
 import (
 	"sync"
-	"wildberies/L0/backend/domain"
+	domain "wildberies/L0/backend/internal/entify"
 )
 
 // getBiIDCache(id){

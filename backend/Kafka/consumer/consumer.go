@@ -7,7 +7,7 @@ import (
 	"os"
 	"time"
 	"wildberies/L0/backend/cache"
-	"wildberies/L0/backend/domain"
+	domain "wildberies/L0/backend/internal/entify"
 
 	"github.com/segmentio/kafka-go"
 )
@@ -45,22 +45,6 @@ func ConsumerKafka(ctx context.Context, newOrder domain.OrderService, cache *cac
 				log.Printf("Create new order error: %v", err)
 				continue
 			}
-			// service
-
-			// // Проверка валидности данных
-			// orderData, err := valid.ProcessValid(m.Value)
-			// if err != nil {
-			// 	log.Printf("Data validation error \n\n")
-			// 	continue
-			// }
-
-			// // Внесение данных в cache
-			// cache.Set(orderData.OrderUID, *orderData)
-
-			// // Внесение новых данных в БД
-			// err = newOrder.Create(ctx, orderData)
-			//
-			// }
 
 			// Подтверждаем обработку сообщения (опционально, зависит от настроек)
 			fmt.Printf("Обработано сообщение c offset %d\n\n", m.Offset)

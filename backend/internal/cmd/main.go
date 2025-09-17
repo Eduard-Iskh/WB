@@ -9,25 +9,18 @@ import (
 	"os/signal"
 	"syscall"
 	"time"
-
-	//"wildberies/L0/backend/logger"
-	"context"
-	//"net/http"
 	"wildberies/L0/backend/Kafka/consumer"
 	"wildberies/L0/backend/cache"
-	"wildberies/L0/backend/handlers"
-
-	//"wildberies/L0/backend/domain"
 	"wildberies/L0/backend/internal/app"
 	"wildberies/L0/backend/internal/config"
-	"wildberies/L0/backend/logger"
-	"wildberies/L0/backend/postgres"
+	"wildberies/L0/backend/internal/web/handlers"
+	"wildberies/L0/backend/pkg/logger"
+	"wildberies/L0/backend/pkg/postgres"
 
-	//valid "wildberies/L0/backend/validate"
+	"context"
 
 	"github.com/go-chi/chi"
 	"github.com/joho/godotenv"
-	//"github.com/gin-gonic/gin"
 )
 
 func main() {

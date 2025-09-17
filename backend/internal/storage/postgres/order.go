@@ -4,7 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"wildberies/L0/backend/domain"
+	domain "wildberies/L0/backend/internal/entify"
 
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
@@ -182,41 +182,3 @@ func (r *orderRepository) GetById(ctx context.Context, id string) (*domain.Order
 
 	return order, nil
 }
-
-// func (r *orderRepository) GetById(ctx context.Context, id string) (*domain.Order, error) {
-// 	//возвращать структуру
-// 	data := new(domain.Order)
-
-// 	query := `SELECT data FROM orders WHERE id = $1`
-
-// 	err := r.db.QueryRow(ctx, query, id).Scan(&data)
-
-// 	if err != nil {
-// 		return nil, fmt.Errorf("getting order by id: %w", err)
-// 	}
-
-// 	return data, nil
-// }
-
-// func (r *orderRepository) Create(ctx context.Context, order *domain.Order) error {
-
-// 	query := `INSERT INTO orders (id, data) VALUES ($1, $2)` // несколько вставак в разные таблицы
-
-// 	dataBytes, _ := json.Marshal(order)
-
-// 	_, err := r.db.Exec(
-// 		ctx,
-// 		query,
-// 		order.OrderUID,
-// 		dataBytes,
-// 	)
-// 	//TODO: init db data вылавливать ошибку повторяющееся значение ключа
-// 	if err != nil {
-// 		// Проверяем, является ли ошибка ошибкой уникальности PostgreSQL
-// 		if pgErr, ok := err.(*pgconn.PgError); ok {
-// 			if pgErr.Code == "23505" { // Код ошибки нарушения уникальности
-// 				return fmt.Errorf("order with UID %s already exists: \n%w", order.OrderUID, err)
-// 			}
-// 		}
-// 		return fmt.Errorf("creating order: %w", err)
-// 	}

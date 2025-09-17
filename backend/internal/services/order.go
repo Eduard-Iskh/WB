@@ -5,8 +5,8 @@ import (
 	"log/slog"
 	"time"
 	"wildberies/L0/backend/cache"
-	"wildberies/L0/backend/domain"
-	valid "wildberies/L0/backend/validate"
+	domain "wildberies/L0/backend/internal/entify"
+	valid "wildberies/L0/backend/internal/services/validate"
 )
 
 type OrderService struct {
@@ -73,6 +73,5 @@ func (r *OrderService) GetById(ctx context.Context, id string) (*domain.Order, e
 	r.logger.Info("Данные получены из БД и сохранены в кэш",
 		slog.String("id", id),
 		slog.Int("duration,", int(elapsed.Microseconds())))
-
 	return order, nil
 }
