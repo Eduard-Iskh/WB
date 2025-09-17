@@ -1,0 +1,6 @@
+{
+  "order_uid": "test_invalid_type",
+  "payment": {
+    "amount": "should_be_number_not_string"
+  }
+}

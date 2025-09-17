@@ -1,0 +1,49 @@
+{
+  "order_uid": "test_bad_email",
+  "track_number": "TESTTRACK",
+  "entry": "TEST",
+  "delivery": {
+    "name": "Test User",
+    "phone": "+1234567890",
+    "zip": "123456",
+    "city": "Moscow",
+    "address": "Test Address",
+    "region": "Moscow",
+    "email": "invalid-email"
+  },
+  "payment": {
+    "transaction": "test_bad_email",
+    "request_id": "",
+    "currency": "USD",
+    "provider": "testpay",
+    "amount": 1000,
+    "payment_dt": 1637907727,
+    "bank": "test",
+    "delivery_cost": 500,
+    "goods_total": 500,
+    "custom_fee": 0
+  },
+  "items": [
+    {
+      "chrt_id": 111111,
+      "track_number": "TESTTRACK",
+      "price": 500,
+      "rid": "test_rid",
+      "name": "Test Product",
+      "sale": 0,
+      "size": "M",
+      "total_price": 500,
+      "nm_id": 111111,
+      "brand": "Test Brand",
+      "status": 200
+    }
+  ],
+  "locale": "en",
+  "internal_signature": "",
+  "customer_id": "test",
+  "delivery_service": "test",
+  "shardkey": "1",
+  "sm_id": 11,
+  "date_created": "2021-11-26T06:22:19Z",
+  "oof_shard": "1"
+}

@@ -1,0 +1,35 @@
+{
+  "order_uid": "",
+  "track_number": "WBILMTESTTRACK",
+  "entry": "WBIL",
+  "delivery": {
+    "name": "",
+    "phone": "",
+    "zip": "",
+    "city": "",
+    "address": "",
+    "region": "",
+    "email": ""
+  },
+  "payment": {
+    "transaction": "",
+    "request_id": "",
+    "currency": "",
+    "provider": "",
+    "amount": 0,
+    "payment_dt": 0,
+    "bank": "",
+    "delivery_cost": 0,
+    "goods_total": 0,
+    "custom_fee": 0
+  },
+  "items": null,
+  "locale": "",
+  "internal_signature": "",
+  "customer_id": "",
+  "delivery_service": "",
+  "shardkey": "",
+  "sm_id": 0,
+  "date_created": "",
+  "oof_shard": ""
+}

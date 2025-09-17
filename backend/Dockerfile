@@ -7,9 +7,8 @@ COPY go.mod go.sum ./
 RUN go mod download
 
 COPY . .
-#изенить(хз что тут пока)
+
 RUN go build -v -o /usr/local/bin/app ./...
 
 
-#хз, что пока нужно 
-CMD ["app"]
+CMD ["/bin/app"]
