@@ -27,7 +27,7 @@ func (r *OrderService) Create(ctx context.Context, order []byte) error {
 	// Проверка валидности данных
 	orderData, err := valid.ProcessValid(order)
 	if err != nil {
-		r.logger.Error("Data validation error \n\n")
+		r.logger.Error("Data validation error ", slog.Any("error", err))
 		return err
 	}
 	r.logger.Info("creating order:", "customer id", orderData.CustomerID)
@@ -35,7 +35,7 @@ func (r *OrderService) Create(ctx context.Context, order []byte) error {
 	// Внесение новых данных в БД
 	err = r.orderRepo.Create(ctx, orderData)
 	if err != nil {
-		r.logger.Error("Create new order error: \n\n")
+		r.logger.Error("Create new order error: ", slog.Any("error", err))
 		return err
 	}
 

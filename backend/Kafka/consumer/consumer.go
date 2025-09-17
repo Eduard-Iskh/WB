@@ -24,7 +24,7 @@ func ConsumerKafka(ctx context.Context, newOrder domain.OrderService, cache *cac
 
 	for n := 0; ; n++ {
 		time.Sleep(2 * time.Second)
-		log.Printf("Получаем сообщение с offset №%d  из Kafka. \n", n)
+
 		select {
 		case <-ctx.Done():
 			log.Printf("Завершение работы Kafkla \n\n")
@@ -35,6 +35,7 @@ func ConsumerKafka(ctx context.Context, newOrder domain.OrderService, cache *cac
 
 			// Читаем сообщения в бесконечном цикле
 			m, err := reader.ReadMessage(ctx)
+			log.Printf("Получаем сообщение с offset №%d  из Kafka. \n", n)
 			if err != nil {
 				log.Printf("Read message error %v", err)
 				continue

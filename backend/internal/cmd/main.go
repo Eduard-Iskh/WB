@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"path/filepath"
 	"syscall"
 	"time"
 	"wildberies/L0/backend/Kafka/consumer"
@@ -20,6 +21,8 @@ import (
 	"context"
 
 	"github.com/go-chi/chi"
+	"github.com/go-chi/chi/middleware"
+	"github.com/go-chi/cors"
 	"github.com/joho/godotenv"
 )
 
@@ -89,10 +92,37 @@ func main() {
 	time.Sleep(2 * time.Second)
 	log.Info("Application shutdown complete")
 
+	// mux := chi.NewRouter()
+
+	// // Добавьте эти строки для обслуживания статических файлов
+	//
+
+	// // Ваш существующий API маршрут
+	// mux.Get("/order/{id}", handlers.GetOrder(orderApp))
+
 	mux := chi.NewRouter()
+
+	mux.Use(cors.Handler(cors.Options{
+		AllowedOrigins:   []string{"https://*", "http://*"},
+		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"},
+		AllowedHeaders:   []string{"Accept", "Authorization", "Content-Type", "X-CSRF-Token"},
+		ExposedHeaders:   []string{"Link"},
+		AllowCredentials: false,
+		MaxAge:           300, // Maximum value not ignored by any of major browsers
+	}))
+
+	mux.Use(middleware.Logger)
+
+	// API маршрут
 	mux.Get("/order/{id}", handlers.GetOrder(orderApp))
 
-	fmt.Println("server was started")
+	// Обслуживание статических файлов
+	workDir, _ := os.Getwd()
+	filesDir := http.Dir(filepath.Join(workDir, "static"))
+	mux.Handle("/*", http.FileServer(filesDir))
+
+	log.Info("Server was started")
+
 	go func() {
 		http.ListenAndServe(fmt.Sprintf(":%s", cfg.HTTPServer.Port), mux)
 	}()
@@ -100,6 +130,8 @@ func main() {
 	// Ожидание сигнала завершения
 	sig := <-sigChan
 	// реалиация через defer
+
+	fmt.Println()
 	log.Info("Received signal, shutting down", slog.String("signal", sig.String()))
 
 	//как работает curl или postmen
