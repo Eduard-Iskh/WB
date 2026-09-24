@@ -1,7 +1,7 @@
 package config
 
 import (
-	"log"
+	"fmt"
 	"os"
 	"time"
 
@@ -10,15 +10,17 @@ import (
 
 type Config struct {
 	Env            string `yaml:"env" env:"ENV" env-default:"local"`
-	StoragePath    string `yaml:"storage_path" env-required:"true"`
+	LimitCache     int    `yaml:"limitC" env-default:"50"`
+	MaxItemsCache  int    `yaml:"maxItemsC" env-default:"100"`
 	HTTPServer     `yaml:"http_server"`
 	PostgresConfig `yaml:"db"`
+	KafkaConfig    `yaml:"kafka"`
 }
 
 type HTTPServer struct {
 	Port        string        `yaml:"port" env-default:"8082"`
 	Timeout     time.Duration `yaml:"timeout" env-default:"4s"`
-	IdleTimeput time.Duration `yaml:"idle_timeout" env-default:"60s"`
+	IdleTimeout time.Duration `yaml:"idle_timeout" env-default:"60s"`
 }
 
 type PostgresConfig struct {
@@ -30,21 +32,32 @@ type PostgresConfig struct {
 	DBName   string `yaml:"dbname"`
 }
 
-func MustLoad() (*Config, error) {
+type KafkaConfig struct {
+	Brokers    []string      `yaml:"brokers"`
+	Topic      string        `yaml:"topic"`
+	GroupID    string        `yaml:"group_id"`
+	DLQTopic   string        `yaml:"dlq_topic"`
+	RetryDelay time.Duration `yaml:"retry_delay"`
+}
+
+func Load() (*Config, error) {
 	configPath := os.Getenv("CONFIG_PATH")
 	if configPath == "" {
-		log.Fatal("CONFIG_PATH is not set")
+		return nil, fmt.Errorf("CONFIG_PATH is not set")
 	}
 
 	//check if file exists
-	if _, err := os.Stat(configPath); os.IsNotExist(err) {
-		log.Fatalf("config file does not exist: %s", configPath)
+	if _, err := os.Stat(configPath); err != nil {
+		if os.IsNotExist(err) {
+			return nil, fmt.Errorf("config file does not exist: %s", configPath)
+		}
+		return nil, fmt.Errorf("cannot stat config file %q: %w", configPath, err)
 	}
 
 	var cfg Config
 
 	if err := cleanenv.ReadConfig(configPath, &cfg); err != nil {
-		log.Fatalf("cannot read config: %s", err)
+		return nil, fmt.Errorf("cannot read config: %w", err)
 	}
 
 	return &cfg, nil

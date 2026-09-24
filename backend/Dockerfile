@@ -1,14 +1,39 @@
-FROM golang:1.25
+# Этап 1: сборка приложения
+FROM golang:1.25-alpine AS builder
 
-WORKDIR /app
+WORKDIR /src
 
-# pre-copy/cache go.mod for pre-downloading dependencies and only redownloading them in subsequent builds if they change
+# Сначала копируем файлы зависимостей.
+# Этот слой будет переиспользован, пока go.mod/go.sum не изменились.
 COPY go.mod go.sum ./
 RUN go mod download
 
+# Копируем исходный код
 COPY . .
 
-RUN go build -v -o /usr/local/bin/app ./...
+# Собираем backend-приложение
+RUN go build -o /out/backend ./internal/cmd
 
 
-CMD ["/bin/app"]
+# Этап 2: финальный runtime-образ
+FROM alpine:3.22
+
+# Создаём отдельного пользователя для запуска backend
+RUN addgroup -S appgroup && \
+    adduser -S -G appgroup appuser
+
+# Рабочая директория приложения
+WORKDIR /app
+
+
+COPY --from=builder --chown=appuser:appgroup /out/backend /app/backend
+COPY --from=builder --chown=appuser:appgroup /src/internal/config/docker.yaml /app/internal/config/docker.yaml
+COPY --from=builder --chown=appuser:appgroup /src/static /app/static
+
+ENV CONFIG_PATH=/app/internal/config/docker.yaml
+
+
+# Backend не должен работать от root
+USER appuser
+
+ENTRYPOINT ["/app/backend"]

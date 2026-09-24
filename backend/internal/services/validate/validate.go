@@ -2,9 +2,8 @@ package valid
 
 import (
 	"encoding/json"
-	"errors"
-	"log"
-	domain "wildberies/L0/backend/internal/entify"
+	"fmt"
+	domain "wildberies/L0/backend/internal/domain"
 
 	"github.com/go-playground/validator/v10"
 )
@@ -18,20 +17,18 @@ func init() {
 func ProcessValid(message []byte) (*domain.Order, error) {
 	// Быстрая проверка валидности JSON
 	if len(message) == 0 {
-		return nil, errors.New("ОШИБКА: пустой файл")
+		return nil, fmt.Errorf("%w: empty order message", domain.ErrInvalidOrder)
 	}
 
 	// Парсинг JSON
 	var order domain.Order
 	if err := json.Unmarshal(message, &order); err != nil {
-		log.Printf("ОШИБКА: неправильная модель данных JSON ")
-		return nil, err
+		return nil, fmt.Errorf("%w: decode order json: %v ", domain.ErrInvalidOrder, err)
 	}
 
 	// Валидация структуры
 	if err := validate.Struct(&order); err != nil {
-		log.Printf("ОШИБКА: есть пустые или заполненные неверно поля данных")
-		return nil, err
+		return nil, fmt.Errorf("%w: validate order: %v", domain.ErrInvalidOrder, err)
 	}
 
 	return &order, nil
