@@ -2,31 +2,37 @@ package handlers
 
 import (
 	"context"
+	"errors"
 	"fmt"
-	"log"
 	"net/http"
 
-	"wildberies/L0/backend/internal/app"
+	"wildberies/L0/backend/internal/domain"
 	"wildberies/L0/backend/internal/web/handlers/common"
 
-	"github.com/go-chi/chi"
+	"github.com/go-chi/chi/v5"
 )
 
-// каждый handler в отдельной папке
-func GetOrder(app *app.App) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		prompt := "получение информации о пользователе"
+type OrderGetter interface {
+	GetById(ctx context.Context, id string) (*domain.Order, error)
+}
 
-		log.Println("request", r)
+// каждый handler в отдельной папке
+func GetOrder(orderService OrderGetter) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		prompt := "get order"
 
 		id := chi.URLParam(r, "id")
 		if id == "" {
-			common.ErrorResponse(w, fmt.Errorf("%s: пустой id", prompt).Error(), http.StatusBadRequest)
+			common.ErrorResponse(w, fmt.Errorf("%s: empty id", prompt).Error(), http.StatusBadRequest)
 			return
 		}
 
-		user, err := app.OrderService.GetById(context.Background(), id)
+		user, err := orderService.GetById(r.Context(), id)
 		if err != nil {
+			if errors.Is(err, domain.ErrOrderNotFound) {
+				common.ErrorResponse(w, fmt.Errorf("%s: %w", prompt, err).Error(), http.StatusNotFound)
+				return
+			}
 			common.ErrorResponse(w, fmt.Errorf("%s: %w", prompt, err).Error(), http.StatusInternalServerError)
 			return
 		}

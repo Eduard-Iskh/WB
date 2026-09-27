@@ -2,40 +2,42 @@ package services
 
 import (
 	"context"
+	"errors"
+	"fmt"
 	"log/slog"
 	"time"
-	"wildberies/L0/backend/cache"
-	domain "wildberies/L0/backend/internal/entify"
+	domain "wildberies/L0/backend/internal/domain"
 	valid "wildberies/L0/backend/internal/services/validate"
 )
 
 type OrderService struct {
 	orderRepo domain.OrderRepository
 	logger    *slog.Logger
-	cache     *cache.Cache
+	cache     domain.OrderCache
 }
 
-func NewOrderService(orderRepo domain.OrderRepository, logger *slog.Logger, cache *cache.Cache) domain.OrderService {
+func NewOrderService(orderRepo domain.OrderRepository, cache domain.OrderCache, log *slog.Logger) domain.OrderService {
 	return &OrderService{
 		orderRepo: orderRepo,
-		logger:    logger,
 		cache:     cache,
+		logger:    log,
 	}
 }
 
 func (r *OrderService) Create(ctx context.Context, order []byte) error {
+
 	// Проверка валидности данных
 	orderData, err := valid.ProcessValid(order)
 	if err != nil {
-		r.logger.Error("Data validation error ", slog.Any("error", err))
+		r.logger.Error("validate order message failed", slog.Any("error", err))
 		return err
 	}
-	r.logger.Info("creating order:", "customer id", orderData.CustomerID)
+	r.logger.Info("creating order", "customer id", orderData.CustomerID)
 
 	// Внесение новых данных в БД
 	err = r.orderRepo.Create(ctx, orderData)
 	if err != nil {
-		r.logger.Error("Create new order error: ", slog.Any("error", err))
+		r.logger.Error("create order failed", slog.Any("error", err))
 		return err
 	}
 
@@ -60,10 +62,13 @@ func (r *OrderService) GetById(ctx context.Context, id string) (*domain.Order, e
 	// Если в кэше нет, получаем из репозитория
 	order, err := r.orderRepo.GetById(ctx, id)
 	if err != nil {
-		r.logger.Info("Ошибка Get By ID:",
-			slog.Any("error", err),
-			slog.String("id", id))
-		return nil, err
+		if errors.Is(err, domain.ErrOrderNotFound) {
+			r.logger.Info("order not found",
+				slog.Any("error", err),
+				slog.String("id", id))
+			return nil, domain.ErrOrderNotFound
+		}
+		return nil, fmt.Errorf("get order by id: %w", err)
 	}
 
 	// Сохраняем в кэш для будущих запросов
@@ -72,6 +77,20 @@ func (r *OrderService) GetById(ctx context.Context, id string) (*domain.Order, e
 	elapsed := time.Since(start)
 	r.logger.Info("Данные получены из БД и сохранены в кэш",
 		slog.String("id", id),
-		slog.Int("duration,", int(elapsed.Microseconds())))
+		slog.Int("duration", int(elapsed.Microseconds())))
 	return order, nil
+}
+
+func (r *OrderService) WarmCache(ctx context.Context, limit int) error {
+	orders, err := r.orderRepo.GetLatest(ctx, limit)
+	if err != nil {
+		r.logger.Error("failed to warm cache", slog.Any("error", err))
+		return fmt.Errorf("warm cache: %w", err)
+	}
+	for _, order := range orders {
+		r.cache.Set(order.OrderUID, *order)
+	}
+
+	r.logger.Info("cache warmed", slog.Int("orders_count", len(orders)))
+	return nil
 }

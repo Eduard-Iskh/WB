@@ -8,6 +8,7 @@ import (
 const (
 	LocalEnv = "local"
 	DevEnv   = "dev"
+	ProdEnv  = "prod"
 )
 
 func Err(err error) slog.Attr {
@@ -17,7 +18,7 @@ func Err(err error) slog.Attr {
 	}
 }
 
-func SetupLogger(env string) *slog.Logger {
+func NewLogger(env string) *slog.Logger {
 
 	var log *slog.Logger
 
@@ -29,6 +30,14 @@ func SetupLogger(env string) *slog.Logger {
 	case DevEnv:
 		log = slog.New(
 			slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{Level: slog.LevelDebug}),
+		)
+	case ProdEnv:
+		log = slog.New(
+			slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{Level: slog.LevelInfo}),
+		)
+	default:
+		log = slog.New(
+			slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{Level: slog.LevelInfo}),
 		)
 	}
 

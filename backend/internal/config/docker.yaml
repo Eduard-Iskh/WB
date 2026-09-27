@@ -1,4 +1,4 @@
-env: 'local' #locla, dev, prod
+env: 'local' #local, dev, prod
 
 limitC: 10
 maxItemsC: 100
@@ -10,7 +10,7 @@ http_server:
 
 db:
   driver: 'postgres'
-  host: 'localhost'
+  host: 'postgres'
   port: 5432
   username: 'orders_user'
   password: 'orders_password'
@@ -18,10 +18,8 @@ db:
 
 kafka:
   brokers: 
-    - 'localhost:9092'
+    - 'kafka:9092'
   topic: 'order_topic'
   dlq_topic: 'order_topic_dlq'
   group_id: 'order-service'
   retry_delay: 15s
-
-

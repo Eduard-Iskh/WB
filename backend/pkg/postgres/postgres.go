@@ -8,9 +8,9 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
-func NewConn(ctx context.Context, cfg *config.Config) (*pgxpool.Pool, error) {
-	connStr := fmt.Sprintf("%s://%s:%s@%s:%d/%s", cfg.PostgresConfig.Driver, cfg.PostgresConfig.User,
-		cfg.PostgresConfig.Password, cfg.PostgresConfig.Host, cfg.PostgresConfig.Port, cfg.PostgresConfig.DBName)
+func NewConn(ctx context.Context, cfg *config.PostgresConfig) (*pgxpool.Pool, error) {
+	connStr := fmt.Sprintf("%s://%s:%s@%s:%d/%s", cfg.Driver, cfg.User,
+		cfg.Password, cfg.Host, cfg.Port, cfg.DBName)
 
 	pool, err := pgxpool.New(ctx, connStr)
 	if err != nil {
